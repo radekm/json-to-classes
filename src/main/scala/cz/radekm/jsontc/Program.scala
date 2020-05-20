@@ -230,8 +230,11 @@ object Generator {
 
 object Program {
   def main(args: Array[String]): Unit = {
+    val jsonFile = args.headOption.getOrElse(sys.error("No json file"))
+    val rootCaseClassName = if (args.size < 2) "Root" else args(1)
+
     // Parse JSON.
-    val json = parse(Files.readString(Path.of(args.head))) match {
+    val json = parse(Files.readString(Path.of(jsonFile))) match {
       case Left(value) => throw value
       case Right(value) => value
     }
@@ -239,7 +242,7 @@ object Program {
     val inferredType = Inference.inferType(json)
     // Description of case classes.
     val createdClasses = ArrayBuffer.empty[(String, ScalaType.ClassDef)]
-    ScalaType.fromInfType("Root", inferredType, createdClasses)
+    ScalaType.fromInfType(rootCaseClassName, inferredType, createdClasses)
 
     // Print generated source code.
     Generator.generateImports().foreach(println)
